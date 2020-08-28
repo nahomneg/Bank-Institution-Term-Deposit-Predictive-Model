@@ -19,6 +19,64 @@ class PreProcessing:
     def __init__(self,data_frame):
         self.data_frame = data_frame
         self.feature_engineering = self.FeatureEngineering()
+    def plot_target_imbalance(self):
+        sns.countplot(x=data_frame['y'])
+        plt.xlabel('Subscribed for Term deposit')
+        labels=["Didn't open term deposit","Open term deposit"]
+    
+    def plot_multiple_categorical_against_target(self,columns,target='y'):
+        axes = []
+        i=0
+        while(i<len(columns)):
+        
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            fig.set_size_inches(18, 7)
+            fig.suptitle('Identify the effect of each categorical variable' , fontsize=22)
+            plt.xlabel('Subscribed for Term deposit')
+            labels=["Didn't open term deposit","Open term deposit"]
+            sns.countplot(x= self.data_frame[columns[i]] ,  hue=self.data_frame[target], ax=ax1)
+            plt.xlabel('Subscribed for Term deposit')
+            #labels=["Didn't open term deposit","Open term deposit"]
+
+            plt.xlabel(columns[i])
+            #labels=["Didn't open term deposit","Open term deposit"]
+          
+            sns.countplot(x= self.data_frame[columns[i+1]] ,  hue=self.data_frame[target], ax=ax2)
+            ax1.set_title('Count of Yes/No by '+columns[i],fontname='Comic Sans MS', fontsize=18)
+            ax2.set_title('Count of Yes/No by ' + columns[i+1],fontname='Comic Sans MS', fontsize=18)
+            i+=2
+            axes.append(ax1)
+            axes.append(ax2)
+        return axes
+    def plot_single_categorical_against_target(self,column,target='y'):
+        
+            plt.figure(figsize=(10,8))
+            return sns.countplot(x=column,hue=target, data=self.data_frame)
+            
+    def plot_correletion_matrix(self):
+        numeric_only = self.data_frame.select_dtypes(exclude='object')
+        plt.figure(figsize=(10,7))
+        ax = sns.heatmap(numeric_only.corr(),annot=True)
+        plt.title('Correlation Matrix')
+        return ax
+    
+    def plot_distribution(self,columns):
+        sns.set()
+        axes = []
+        i=0
+        while i<len(columns):
+          fig, (ax1, ax2) = plt.subplots(1, 2)
+          fig.set_size_inches(18, 7)
+          sns.distplot(self.data_frame[columns[i]],bins=15,color='orange',ax=ax1)
+          try:
+            sns.distplot(self.data_frame[columns[i+1]],bins=15,color='orange',ax=ax2)
+          except:
+            print('Warning: Odd number of variables provided. One plot will be empty')
+          i+=2
+          axes.append(ax1)
+          axes.append(ax2)
+        return axes
+                
     
     def detect_outliers_boxplot(self,columns):
         
