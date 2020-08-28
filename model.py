@@ -69,7 +69,7 @@ class Model():
             
         return cv
     
-    def compare_models(self,cross_validator,X_train,y_train,scoring = 'accuracy'):
+    def compare_models(self,cross_validator,X_train,y_train,scoring = 'roc_auc'):
         scores = [] 
         classifiers = []
         for pipe in self.pipes:
@@ -77,6 +77,8 @@ class Model():
             scores.append(results.mean())
             keys=list(pipe.named_steps.keys())
             classifiers.append(keys[2])
-        return {'scores': scores, 'classifiers': classifiers}
+        return {'scores': scores, 'classifiers': classifiers, 'scoring':scoring}
+    
+    
     
         
