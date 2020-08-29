@@ -12,6 +12,13 @@ This repository is used for carrying out data exploration, data
 cleaning, feature extraction, and developing robust machine learning algorithms that
 would aid the Bank Of Portugal in making their marketing campaigns more efficient.
 
+
+# Git Structure 
+* The notebook directory contains Main.ipynb which uses the Preprocessor and Model classes to To carry out the project on a notebook.
+* Main.py -- is an automated script that uses the Preprocessor and Model classes to To carry out the project.
+* Data.py -- This is where the preprocessing class is found. It is responsible for plotting, handling outliers, standardization, and encoding.
+* Model.py -- THis is where the modeling class is located. It is responsible for cretaing classifiers, creating pipes, k-fold splitting and comparison of the selected clasifiers
+
 # Data
 
 The Bank of Portugal collected a huge amount of data that includes
