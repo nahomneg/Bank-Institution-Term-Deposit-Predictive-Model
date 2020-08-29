@@ -47,6 +47,12 @@ The data contains contact month which was used to come up with a new feature 'Ye
 # Method 
 
 4 classifier algorithms were considered in this project. They were compared againist each using different metrics, but ROC_AUC being the main one. K-Fold and Stratified K-Fold techniques were used to get a validation set from the training data which is then used for cross-validation with 5 folds.
+### The classifiers are
+
+* XGBoost
+* Logistic Regression
+* Multi Layer Perceptron
+* Random Forest
 
 Prior to being fed to the clasifiers the dataset's categorical columns were encoded using one hot encoding. The numerical columns were first cleaned from outliers. Then Standardization was applied to them.
 
