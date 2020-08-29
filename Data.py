@@ -3,11 +3,15 @@
 Created on Fri Aug 28 03:56:24 2020
 
 @author: Nahom Negussie
+
+
+This class is concerned with all the preprocessing, data exploration(plotting) and Feature extraction of the 
+Bank of portugal data.
 """
 
 
 
-
+# import the necessary modules
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
@@ -15,7 +19,10 @@ from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+
 class PreProcessing:
+    # initialize class with a constructor that takes the data_frame to be processed
+    # set matplot lib settings
     def __init__(self,data_frame):
         self.data_frame = data_frame
         
@@ -29,6 +36,8 @@ class PreProcessing:
         
         plt.rcParams["font.family"] = "cursive"
         plt.rc('font', **font) 
+    
+    # plot the count of yes and no values of the target column 'y'
     def plot_target_imbalance(self):
         total = len(self.data_frame['y'])*1.
         ax = sns.countplot(x=self.data_frame['y'])
@@ -39,11 +48,13 @@ class PreProcessing:
         labels=["Didn't open term deposit","Open term deposit"]
         return ax
     
+    
+    #multiple plots of the count of yes and no values of target column 'y' per categories of a variable
     def plot_multiple_categorical_against_target(self,columns,target='y'):
         axes = []
         i=0
         while(i<len(columns)):
-        
+            # create subplots
             fig, (ax1, ax2) = plt.subplots(1, 2)
             fig.set_size_inches(18, 7)
             fig.suptitle('Identify the effect of each categorical variable' , fontsize=22)
@@ -69,11 +80,14 @@ class PreProcessing:
             axes.append(ax1)
             axes.append(ax2)
         return axes
+    
+    # plot the count of yes and no values of the target column 'y' per categories of a variable
     def plot_single_categorical_against_target(self,column,target='y'):
         
             plt.figure(figsize=(14,8))
             return sns.countplot(x=column,hue=target, data=self.data_frame,palette=['gold','salmon'])
             
+    # plot the correlation heatmap of numerical columns
     def plot_correletion_matrix(self):
         numeric_only = self.data_frame.select_dtypes(exclude='object')
         plt.figure(figsize=(10,7))
@@ -81,6 +95,7 @@ class PreProcessing:
         plt.title('Correlation Matrix')
         return ax
     
+    # plot the distribution of numerical columns using histograms
     def plot_distribution(self,columns):
         sns.set()
         axes = []
@@ -93,9 +108,7 @@ class PreProcessing:
           ax1.set_ylabel('Value', fontsize=20)
           try:
             sns.distplot(self.data_frame[columns[i+1]],bins=15,color='orange',ax=ax2)
-            
             ax2.set_xlabel(columns[i+1], fontsize=20)
-            
             ax2.set_ylabel('Value', fontsize=20)
           except:
             print('Warning: Odd number of variables provided. One plot will be empty')
@@ -104,7 +117,7 @@ class PreProcessing:
           axes.append(ax2)
         return axes
                 
-    
+    # detect outliers of numerical using boxplots
     def detect_outliers_boxplot(self,columns):
         sns.set()
         axes = []
@@ -129,6 +142,9 @@ class PreProcessing:
         
         
         return axes
+    
+    
+    #plot the distribution of the yes and no values of the target variable based on multiple columns
     def plot_hist_against_target(self,columns):
         axes = []
         index = 0
@@ -156,6 +172,7 @@ class PreProcessing:
         plt.figlegend(('Yes', 'No'),loc="right",title = "Term deposit")
         return axes
     
+    # replace outliers of a column with the respective median 
     def __replace_column_outliers(self,column):
         quartile_one = self.data_frame[column].quantile(0.25)
         quartiile_three = self.data_frame[column].quantile(0.75)
@@ -165,41 +182,53 @@ class PreProcessing:
         self.data_frame.loc[self.data_frame[column] > Upper_Whisker, column] = self.data_frame[column].median()
         self.data_frame.loc[self.data_frame[column] < Lower_Whisker, column] = self.data_frame[column].median()
     
+    # handle all outliers of the given column by using the above __replace_column_outliers()
     def handle_outliers(self,columns):
         i = 0
         while(i<len(columns)):
             self.__replace_column_outliers(columns[i])
             i+=1
     
+    # assign years to each row of the data_frame under consideration
     def assign_years(self):
         feature_engineering = self.FeatureEngineering()
         self.data_frame['Year'] = self.data_frame.apply(lambda row: feature_engineering.get_year(row['month']),axis=1)
     
+    # get the current dataframe
     def get_data_frame(self):
         return self.data_frame
     
+    
+    # get the column transformer that is responsible for one hot encoding and standardization
     def get_column_transformer(self,categorical_columns,numerical_columns,drop_columns):
         return ColumnTransformer([('encoder', OneHotEncoder(), categorical_columns),
                                   ('drop_columns' , 'drop', drop_columns),
                                   ('scaler', StandardScaler(),numerical_columns),], 
                                  remainder='passthrough')
+    
+    # get all columns except target
     def get_features(self):
         return self.data_frame.loc[:, self.data_frame.columns != 'y']
     
+    # get target column
     def get_target(self):
         return self.data_frame['y']
     
+    
+    # train_test split the dataframe to training and test sets in 80:20 ratio
     def train_test_split(self):
         return train_test_split(self.get_features(),self.get_target(),test_size=0.2,random_state=0)
 
-        
+    # class used to create a new feature year based on 
     class FeatureEngineering():
+        # initialize year with 2008 since the data is from 2008 to 2010
         def __init__(self):
             self.year=2008
             self.months = dict([('jan', 1),('feb', 2),('mar', 3),('apr', 4),('may', 5),
                     ('jun', 6),('jul', 7),('aug', 8),('sep', 9),('oct', 10),('nov', 11),('dec', 12),('kl', 12)])
             self.current_month = 5
         
+        # return the correct year based on a month by comparing it with the current month
         def get_year(self,month):
             current_month = self.months[month]
             if(current_month) >= self.current_month:
