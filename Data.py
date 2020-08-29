@@ -18,11 +18,26 @@ from sklearn.model_selection import train_test_split
 class PreProcessing:
     def __init__(self,data_frame):
         self.data_frame = data_frame
-        self.feature_engineering = self.FeatureEngineering()
+        
+        font = {'family' : 'bold',
+        'weight' : 'bold',
+        'size'   : 2}
+        plt.rc('xtick',labelsize=23)
+        plt.rc('ytick',labelsize=23)
+        plt.rc('legend',fontsize=23)
+        
+        
+        plt.rcParams["font.family"] = "cursive"
+        plt.rc('font', **font) 
     def plot_target_imbalance(self):
-        sns.countplot(x=data_frame['y'])
+        total = len(self.data_frame['y'])*1.
+        ax = sns.countplot(x=self.data_frame['y'])
+        for p in ax.patches:
+            ax.annotate('{:.1f}%'.format(100*p.get_height()/total), (p.get_x()+0.1, p.get_height()+5))
         plt.xlabel('Subscribed for Term deposit')
+        plt.title('Plot showing the class imbalance')
         labels=["Didn't open term deposit","Open term deposit"]
+        return ax
     
     def plot_multiple_categorical_against_target(self,columns,target='y'):
         axes = []
@@ -32,26 +47,32 @@ class PreProcessing:
             fig, (ax1, ax2) = plt.subplots(1, 2)
             fig.set_size_inches(18, 7)
             fig.suptitle('Identify the effect of each categorical variable' , fontsize=22)
-            plt.xlabel('Subscribed for Term deposit')
+            
             labels=["Didn't open term deposit","Open term deposit"]
-            sns.countplot(x= self.data_frame[columns[i]] ,  hue=self.data_frame[target], ax=ax1)
-            plt.xlabel('Subscribed for Term deposit')
-            #labels=["Didn't open term deposit","Open term deposit"]
-
-            plt.xlabel(columns[i])
-            #labels=["Didn't open term deposit","Open term deposit"]
+            sns.countplot(x= self.data_frame[columns[i]] , palette=['salmon','gold'],  hue=self.data_frame[target], ax=ax1)
+            
+            
+            
           
-            sns.countplot(x= self.data_frame[columns[i+1]] ,  hue=self.data_frame[target], ax=ax2)
+            sns.countplot(x= self.data_frame[columns[i+1]] , palette=['salmon','gold'],  hue=self.data_frame[target], ax=ax2)
             ax1.set_title('Count of Yes/No by '+columns[i],fontname='Comic Sans MS', fontsize=18)
+            
+            
             ax2.set_title('Count of Yes/No by ' + columns[i+1],fontname='Comic Sans MS', fontsize=18)
+            ax1.set_xlabel(columns[i], fontsize=20)
+            ax2.set_xlabel(columns[i+1], fontsize=20)
+            ax1.set_ylabel('Count', fontsize=20)
+            ax2.set_ylabel('Count', fontsize=20)
+            
             i+=2
+            
             axes.append(ax1)
             axes.append(ax2)
         return axes
     def plot_single_categorical_against_target(self,column,target='y'):
         
-            plt.figure(figsize=(10,8))
-            return sns.countplot(x=column,hue=target, data=self.data_frame)
+            plt.figure(figsize=(14,8))
+            return sns.countplot(x=column,hue=target, data=self.data_frame,palette=['gold','salmon'])
             
     def plot_correletion_matrix(self):
         numeric_only = self.data_frame.select_dtypes(exclude='object')
@@ -68,8 +89,14 @@ class PreProcessing:
           fig, (ax1, ax2) = plt.subplots(1, 2)
           fig.set_size_inches(18, 7)
           sns.distplot(self.data_frame[columns[i]],bins=15,color='orange',ax=ax1)
+          ax1.set_xlabel(columns[i], fontsize=20)
+          ax1.set_ylabel('Value', fontsize=20)
           try:
             sns.distplot(self.data_frame[columns[i+1]],bins=15,color='orange',ax=ax2)
+            
+            ax2.set_xlabel(columns[i+1], fontsize=20)
+            
+            ax2.set_ylabel('Value', fontsize=20)
           except:
             print('Warning: Odd number of variables provided. One plot will be empty')
           i+=2
@@ -79,18 +106,54 @@ class PreProcessing:
                 
     
     def detect_outliers_boxplot(self,columns):
-        
+        sns.set()
         axes = []
         index = 0
         while(index<len(columns)):
-            fig, (ax1) = plt.subplots(1)
+            fig, (ax1,ax2) = plt.subplots(1,2)
             fig.set_size_inches(15.5, 7.5)
             fig.suptitle('Identify Numerical Columns with Outliers using boxplots')
-            sns.boxplot(data=self.data_frame[[columns[index]]], palette=['moccasin','moccasin'], orient="v",  ax=ax1)
+            sns.boxplot(y=columns[index], x='y', data=self.data_frame,palette=['moccasin','moccasin'], orient="v",  ax=ax1)
+            ax1.set_xlabel(columns[index], fontsize=20)
+            ax1.set_ylabel('Value', fontsize=20)
+            try:
+                sns.boxplot(y=columns[index+1], x='y', data=self.data_frame, palette=['moccasin','moccasin'], orient="v",  ax=ax2)
+                ax2.set_xlabel(columns[index+1], fontsize=20)
+            
+                ax2.set_ylabel('Value', fontsize=20)
+            except:
+                print('Odd number of columns provided')
             axes.append(ax1)
-            index+=1
+            axes.append(ax2)
+            index+=2
         
         
+        return axes
+    def plot_hist_against_target(self,columns):
+        axes = []
+        index = 0
+        data1 = self.data_frame[self.data_frame['y'] == 'yes']
+        data2 = self.data_frame[self.data_frame['y'] == 'no']
+        while(index<len(columns)):
+            fig, (ax1,ax2) = plt.subplots(1,2)
+            fig.set_size_inches(15.5, 7.5)
+            fig.suptitle('Histograms of numerical variables per each target class')
+            ax1.hist(data2[columns[index]],color = '#DC4405',alpha=0.7,bins=20, edgecolor='white') 
+            ax1.hist(data1[columns[index]],color='#000000',alpha=0.5,bins=20, edgecolor='white')
+            
+            ax1.set_xlabel(columns[index], fontsize=20)
+            ax1.set_ylabel('Count', fontsize=20)
+            plt.figlegend(('Yes', 'No'),loc="right",title = "Term deposit")
+            try:
+                ax2.hist(data2[columns[index+1]],color = '#DC4405',alpha=0.7,bins=20, edgecolor='white') 
+                ax2.hist(data1[columns[index+1]],color='#000000',alpha=0.5,bins=20, edgecolor='white')
+                ax2.set_xlabel(columns[index+1], fontsize=20)
+            except:
+                print('Odd number of columns provided')
+            axes.append(ax1)
+            axes.append(ax2)
+            index+=2
+        plt.figlegend(('Yes', 'No'),loc="right",title = "Term deposit")
         return axes
     
     def __replace_column_outliers(self,column):
@@ -109,7 +172,8 @@ class PreProcessing:
             i+=1
     
     def assign_years(self):
-        self.data_frame['Year'] = self.data_frame.apply(lambda row: self.feature_engineering.get_year(row['month']),axis=1)
+        feature_engineering = self.FeatureEngineering()
+        self.data_frame['Year'] = self.data_frame.apply(lambda row: feature_engineering.get_year(row['month']),axis=1)
     
     def get_data_frame(self):
         return self.data_frame
@@ -126,7 +190,7 @@ class PreProcessing:
         return self.data_frame['y']
     
     def train_test_split(self):
-        return train_test_split(self.get_features(),self.get_target(),test_size=0.1,random_state=0)
+        return train_test_split(self.get_features(),self.get_target(),test_size=0.2,random_state=0)
 
         
     class FeatureEngineering():
